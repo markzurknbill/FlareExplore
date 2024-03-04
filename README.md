@@ -1,6 +1,6 @@
 <div align="center">
   <h1>Flare Explore</h1>
- <img src="https://raw.githubusercontent.com/security007/FlareExplore/master/img/img3.png" style="width:40vw"> 
+ <img src="https://github.com/markzurknbill/FlareExplore/blob/main/img/img3.png?raw=true" style="width:40vw"> 
 
 Flare Explore is a Python program designed to find the real IP address behind Cloudflare protection. It utilizes the Censys API to gather information and reveal the actual IP address of a specified domain.
 <br>
