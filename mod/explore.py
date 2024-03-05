@@ -6,7 +6,6 @@ import socket
 import whois
 import requests
 import sys
-import censys
 init()
 
 # disable insecure warning requests verify=False
@@ -14,13 +13,13 @@ requests.packages.urllib3.disable_warnings()
 
 class Flare:
     def __init__(self,api,secret,domain):
-        self.domain = domain
+        self.domain = domain.replace("http://","").replace("https://","").replace("/","")
 
-        # handle exception if api not set
+        # handle exception 
         try:
             self.censysApi = CensysHosts(api_id=api,api_secret=secret)
-        except censys.common.exceptions.CensysException as e:
-            print(f"❌ {Fore.RED}{e}{Fore.RESET}")
+        except Exception as e:
+            print(f"❌ {Fore.RED}Censys ERROR: {e}{Fore.RESET}")
             sys.exit()
 
     def similarity(self,text=list()):
@@ -67,8 +66,12 @@ class Flare:
                 sys.exit()
 
     def scan(self):
-        query = self.censysApi.search(self.domain, pages=-1)
-        return query()
+        try:
+            query = self.censysApi.search(self.domain, pages=-1)
+            return query()
+        except Exception as e:
+            print(f"❌ {Fore.RED}Censys ERROR: {e}{Fore.RESET}")
+            sys.exit()
     
     def ipaddr(self):
         return socket.gethostbyname(self.domain)
