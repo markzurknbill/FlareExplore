@@ -2,6 +2,7 @@ from mod import explore
 from colorama import Fore,init
 import json
 import argparse
+import sys
 init()
 
 banner = f"""
@@ -21,5 +22,10 @@ required.add_argument('-d', '--domain', help="Domain to check , example.com, wit
 args = parser.parse_args()
 with open("config.json","r") as config:
     read_config = json.load(config)
-app = explore.Flare(read_config['api_id'],read_config['api_secret'],args.domain)
-app.main()
+
+if len(read_config['api_id']) != 0 and len(read_config['api_secret']) != 0:
+    app = explore.Flare(read_config['api_id'],read_config['api_secret'],args.domain)
+    app.main()
+else:
+    print(f"❌ {Fore.RED}api_id and api_secret in config.json cannot be empty {Fore.RESET}")
+    sys.exit()
