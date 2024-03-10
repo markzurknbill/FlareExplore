@@ -1,11 +1,12 @@
 <div align="center">
   <h1>Flare Explore</h1>
- <img src="https://github.com/markzurknbill/FlareExplore/blob/main/img/img3.png?raw=true" style="width:40vw"> 
+ <img src="https://raw.githubusercontent.com/security007/FlareExplore/master/img/img3.png" style="width:40vw">
 
-Flare Explore is a Python program designed to find the real IP address behind Cloudflare protection. It utilizes the Censys API to gather information and reveal the actual IP address of a specified domain.
+Flare Explore is a Python program designed to find the real IP address behind Cloudflare protection. It utilizes the CENSYS API and SHODAN to gather information and reveal the actual IP address of a specified domain.
 <br>
-![Static Badge](https://img.shields.io/badge/Version-1.1-blue?style=for-the-badge)
+![Static Badge](https://img.shields.io/badge/Version-1.2-blue?style=for-the-badge)
 ![Static Badge](https://img.shields.io/badge/Tested%20On-Windows%2010%2C%2011%20%26%20Kali%20Linux-blue?style=for-the-badge)
+
 </div>
 
 **Fixing Error Whois Module**
@@ -19,23 +20,35 @@ pip install -r requirements.txt
 **Installation and Usage**
 
 1. Clone the repository:
-    ```bash
-    git clone https://github.com/security007/FlareExplore
-    ```
+   ```bash
+   git clone https://github.com/security007/FlareExplore
+   ```
 2. Install requirements module:
-    ```bash
-    pip install -r requirements.txt
-    ```
+
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 3. Change to the FlareExplore directory:
-    ```bash
-    cd FlareExplore
-    ```
 
-4. Run the program with the desired domain:
-    ```bash
-    python fileexplore.py -d domain.com
-    ```
+   ```bash
+   cd FlareExplore
+   ```
+
+4. Edit credentials in config.json:
+
+   ```json
+   {
+     "api_id": "",
+     "api_secret": "",
+     "shodan_cookie": ""
+   }
+   ```
+
+5. Run the program with the desired domain:
+   ```bash
+   python fileexplore.py -d domain.com
+   ```
 
 **Contribution**
 
