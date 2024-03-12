@@ -2,6 +2,7 @@ from censys.search import CensysHosts
 from difflib import SequenceMatcher
 from bs4 import BeautifulSoup as bs
 from colorama import Fore,init
+from datetime import datetime
 import re
 import socket
 import whois
@@ -20,8 +21,13 @@ class Flare:
         try:
             self.censysApi = CensysHosts(api_id=api,api_secret=secret)
         except Exception as e:
-            print(f"❌ {Fore.RED}Censys ERROR: {e}{Fore.RESET}")
+            print(f"{self.times()} {Fore.RED}Censys ERROR: {e}{Fore.RESET}")
             pass
+            
+    def times(self):
+    	currentDateAndTime = datetime.now()
+    	currentTime = currentDateAndTime.strftime("%H:%M:%S")
+    	return f"[{currentTime}]"
 
     def similarity(self,text=list()):
         try:
@@ -60,7 +66,7 @@ class Flare:
         except KeyboardInterrupt:
             sys.exit()
         except Exception as e:
-            print(f"❌ {Fore.RED}{e}{Fore.RESET}")
+            print(f"{self.times()} {Fore.RED}{e}{Fore.RESET}")
             if pass_:
                 return ""
             else:
@@ -106,21 +112,21 @@ class Flare:
             query = self.censysApi.search(self.domain, pages=-1)
             return query()
         except Exception as e:
-            print(f"❌ {Fore.RED}Censys ERROR: {e}{Fore.RESET}")
+            print(f"{self.times()} {Fore.RED}Censys ERROR: {e}{Fore.RESET}")
             return []
     # ---
         
     # shodan
     def scan_shodan(self):
         try:
-            req = requests.get(f"https://www.shodan.io/search?query={self.domain}",headers={'Cookie':self.shodan_cookie,'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0'},verify=False,timeout=5)
+            req = requests.get(f"https://www.shodan.io/search?query={self.domain}",headers={'Cookie':self.shodan_cookie,'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0'},verify=False,timeout=10)
             if "Daily search usage limit reached" in req.text:
-                print(f"❌ {Fore.RED}Shodan ERROR: Daily search usage limit reached, try to add your shodan account cookie in config.json{Fore.RESET}")
+                print(f"{self.times()} {Fore.RED}Shodan ERROR: Daily search usage limit reached, try to add your shodan account cookie in config.json{Fore.RESET}")
             if "No results found" in req.text:
-                print(f"❌ {Fore.RED}Shodan ERROR: No results found{Fore.RESET}")
+                print(f"{self.times()} {Fore.RED}Shodan ERROR: No results found{Fore.RESET}")
             return self.grep_ip_addresses(req.text)
         except Exception as e:
-            print(f"❌ {Fore.RED}Shodan ERROR: {e}{Fore.RESET}")
+            print(f"{self.times()} {Fore.RED}Shodan ERROR: {e}{Fore.RESET}")
             return []
     # ---
     
@@ -128,14 +134,14 @@ class Flare:
         return socket.gethostbyname(self.domain)
     
     def main(self):
-        print(f"🔎 {Fore.BLUE}Scanning {self.domain} {Fore.RESET}")
+        print(f"{self.times()} {Fore.BLUE}Scanning {self.domain} {Fore.RESET}")
 
         ###################### check domain NS
         ns = self.check_dns(self.domain)
         if "cloudflare" in ns[0].lower():
-            print(f"⚠️ {self.domain} ({self.ipaddr()}) {Fore.YELLOW}IS BEHIND CLOUDFLARE{Fore.RESET} {ns}")
+            print(f"{self.times()} {self.domain} ({self.ipaddr()}) {Fore.YELLOW}IS BEHIND CLOUDFLARE{Fore.RESET} {ns}")
         else:
-            print(f"✔️ {self.domain} ({self.ipaddr()}) {Fore.GREEN}IS NOT BEHIND CLOUDFLARE{Fore.RESET} {ns}")
+            print(f"{self.times()} {self.domain}({self.ipaddr()}) {Fore.GREEN}IS NOT BEHIND CLOUDFLARE{Fore.RESET} {ns}")
             sys.exit()
 
         ####################### main target info
@@ -143,10 +149,10 @@ class Flare:
         main_target_content_length = len(main_target_content) / 1024
         main_target_title = self.bsoup(main_target_content)
 
-        print(f"🌐 {self.domain} | size: {main_target_content_length:.2f} kb | title: {main_target_title}")
+        print(f"{self.times()} {self.domain} | size: {main_target_content_length:.2f} kb | title: {main_target_title}")
 
         ######################## scan domain
-        print(f"🔎 {Fore.BLUE}Finding possible Ip{Fore.RESET}")
+        print(f"{self.times()} {Fore.BLUE}Finding possible Ip{Fore.RESET}")
         scanner = self.scan()
         scanner_shodan = self.scan_shodan()
         list_ip = list()
@@ -154,7 +160,7 @@ class Flare:
         total_results_shodan = len(scanner_shodan)
 
         if total_results_shodan == 0 and total_results == 0:
-            print(f"⚠️ Failed to find real ip")
+            print(f"{self.times()} Failed to find real ip")
             sys.exit()
 
         for ip in scanner:
@@ -171,17 +177,17 @@ class Flare:
             except TypeError:
                 pass
 
-        print(f"🔎 {len(list_ip)} Ip associated with {self.domain} ")
+        print(f"{self.times()} {len(list_ip)} Ip associated with {self.domain} ")
         
 
         ########################## check similarity
-        print(f"🔎 {Fore.BLUE}Checking candidates ip{Fore.RESET}")
+        print(f"{self.times()} {Fore.BLUE}Checking candidates ip{Fore.RESET}")
 
         for possible in list_ip:
-            print(f"✔️ Candidate real ip address {Fore.GREEN}{possible}{Fore.RESET} {self.check_dns(possible)}")
+            print(f"{self.times()} Candidate real ip address {Fore.GREEN}{possible}{Fore.RESET}")
 
         # get candidate content and title for checking similarity
-        print(f"🔎 {Fore.BLUE}Checking similarity{Fore.RESET}")
+        print(f"{self.times()} {Fore.BLUE}Checking similarity{Fore.RESET}")
         for test_ip in list_ip:
             try:
                 candidate_content = self.requester("http://"+test_ip,True).content
@@ -194,9 +200,9 @@ class Flare:
             similar_content = float(self.similarity([main_target_content,candidate_content]))
             similar_title = float(self.similarity([main_target_title,candidate_title]))
             if similar_content > 60.0 and similar_title > 70.0:
-                print(f"🌐 {test_ip} size: {candidate_content_length:.2f} kb | content similarity: {similar_content}% | title similarity: {similar_title}% ({Fore.GREEN}POSSIBLE REAL IP{Fore.RESET})")
+                print(f"{self.times()} {test_ip} size: {candidate_content_length:.2f} kb | content similarity: {similar_content}% | title similarity: {similar_title}% ({Fore.GREEN}POSSIBLE REAL IP{Fore.RESET})")
             else:
-                print(f"🌐 {test_ip} size: {candidate_content_length:.2f} kb | content similarity: {similar_content}% | title similarity: {similar_title}% ")
+                print(f"{self.times()} {test_ip} size: {candidate_content_length:.2f} kb | content similarity: {similar_content}% | title similarity: {similar_title}% ")
 
 
-    
+    
